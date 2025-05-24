@@ -480,4 +480,50 @@ app.delete("/data", (req, res) => {
 });
 ```
 
+`Error Handling in Express.js`
+
+- **Local try...catch for Synchronous Code**
+
+Use try...catch blocks for synchronous operations within your route handlers or middleware. This lets you immediately manage errors at their source.
+
+```javascript
+app.use("/admin", (req, res, next) => {
+  try {
+    if (!req.body.token || req.body.token !== "ADMIN_KEY") {
+      throw new Error("Unauthorized.");
+    }
+    next(); // All good, move on
+  } catch (error) {
+    res.status(401).send(error.message); // Send specific error to client
+  }
+});
+```
+
+- **Centralized Error Handling Middleware**
+
+For all other errors, especially those from asynchronous operations or those passed via next(error), set up a centralized error-handling middleware. This special middleware has four arguments ((err, req, res, next)) and should be placed at the very end of your Express app setup.
+
+```javascript
+// Example route that might throw an async error
+app.get("/async-data", async (req, res, next) => {
+  try {
+    const data = await someAsyncOperation(); // Imagine this fails
+    res.json(data);
+  } catch (error) {
+    next(error); // Pass error to the centralized handler
+  }
+});
+
+// --- Place this LAST in your app.js or server.js ---
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).send(err.message || "Something went wrong!"); // Send a generic message to client
+});
+```
+
+**Key Principles:**
+
+- Always Respond: Ensure every request eventually gets a response, even if it's an error. Otherwise, the client will hang.
+- next(error): Use next(error) to forward errors to your centralized handler, skipping normal middleware/routes.
+
 |

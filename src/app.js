@@ -4,30 +4,19 @@ const app = express(); // created a instance
 
 const { authAdmin, userAdmin } = require("./middleware/auth");
 
-app.use("/admin", authAdmin);
-
-app.get(
-  // here auth middleware wouldn't work
-  "/user",
-  userAdmin, // another way to use middleware function
-  (req, res, next) => {
-    // middleware
-    console.log("2nd Response Log!!");
-    next();
-  },
-  (req, res, next) => {
-    // actual request handler
-    console.log("3rd Response Log!!");
+app.use("/admin", (req, res, next) => {
+  try {
+    throw new error("xyz");
+  } catch (error) {
+    res.status(500).send(error.message);
   }
-);
-
-app.get("/admin/getAllData", (req, res) => {
-  // first check the auth then comes here
-  console.log("admin all data");
 });
 
-app.get("/admin/deleteData", (req, res) => {
-  console.log("admin data deleted");
+// Centralized error
+app.use("/", (err, req, res, next) => {
+  if (err) {
+    res.status(500).send("Something went wrong !!!");
+  }
 });
 
 // listen to a port for incoming requests
