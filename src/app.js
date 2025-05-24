@@ -2,34 +2,32 @@ const express = require("express");
 
 const app = express(); // created a instance
 
-// app.use("/user", (req, res) => {
-//   res.send("HAHAHAHAHAHAHA");
-// });
+const { authAdmin, userAdmin } = require("./middleware/auth");
 
-app.get("/u{s}*er", (req, res) => {
-  res.send({ firstname: "krishnashri", lastname: "maji" });
+app.use("/admin", authAdmin);
+
+app.get(
+  // here auth middleware wouldn't work
+  "/user",
+  userAdmin, // another way to use middleware function
+  (req, res, next) => {
+    // middleware
+    console.log("2nd Response Log!!");
+    next();
+  },
+  (req, res, next) => {
+    // actual request handler
+    console.log("3rd Response Log!!");
+  }
+);
+
+app.get("/admin/getAllData", (req, res) => {
+  // first check the auth then comes here
+  console.log("admin all data");
 });
 
-app.post("/user", (req, res) => {
-  console.log(req.query.userId);
-  res.send("User has been created.");
-});
-
-app.post("/user/:userId", (req, res) => {
-  console.log(req.params.userId);
-  res.send("User has been created.");
-});
-
-app.delete("/user", (req, res) => {
-  res.send("User has been deleted.");
-});
-
-app.use("/test/2", (req, res) => {
-  res.send("Namste test2 !!!");
-});
-
-app.use("/test", (req, res) => {
-  res.send("Hello from the server test !!!");
+app.get("/admin/deleteData", (req, res) => {
+  console.log("admin data deleted");
 });
 
 // listen to a port for incoming requests
