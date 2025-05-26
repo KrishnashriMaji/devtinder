@@ -2,26 +2,61 @@ const express = require("express");
 const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user");
-
+const { validateSignUpData } = require("./utils/validate");
+const bcrypt = require("bcrypt");
+const validator = require("validator");
 app.use("/", express.json());
+
+// Login
+app.get("/loginUser", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ emailId: email });
+    if (!user) {
+      throw new Error("Invalid Credential!!");
+    }
+    console.log(password, user.password);
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new Error("Invalid Credential!!");
+    }
+
+    res.send("Login Successfully !!");
+  } catch (error) {
+    res.status(400).send("Something wrong !!!!" + error.message);
+  }
+});
 
 // Insert
 app.post("/signupUser", async (req, res) => {
-  const { firstName, lastName, location, age, gender } = req.body;
-
-  const user = await new User({
-    firstName: firstName,
-    lastName: lastName,
-    location: location,
-    age: age,
-    gender: gender,
-  });
-
   try {
-    user.save();
+    // validate data
+    validateSignUpData(req);
+
+    const { firstName, lastName, emailId, password, age, gender } = req.body;
+
+    // Encript the data
+    // bcrypt.hash(password, 10).then(function (hash) {
+    //   console.log(hash);
+    // });
+
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      firstName: firstName,
+      lastName: lastName,
+      emailId: emailId,
+      password: hashPassword,
+      age: age,
+      gender: gender,
+    });
+    await user.save();
     res.send("User created successfully.");
   } catch (error) {
-    res.status(400).send("Something wrong !!!!");
+    res.status(400).send("Something wrong !!!!" + error.message);
   }
 });
 
@@ -61,12 +96,28 @@ app.get("/getAllUsers", async (req, res) => {
 // Update
 app.patch("/updateUser/:userId", async (req, res) => {
   const userId = req.params?.userId;
-  console.log(userId);
-  const { firstName, lastName, location, age, gender, Customer } = req.body;
+  const { firstName, lastName, location, age, gender, skill } = req.body;
 
   const filter = { _id: userId };
+  const data = req.body;
 
   try {
+    const updateAllowed = [
+      "firstName",
+      "lastName",
+      "password",
+      "age",
+      "skill",
+      "about",
+    ];
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      updateAllowed.includes(k)
+    );
+
+    if (!isUpdateAllowed) {
+      throw new Error("Update is not allowed");
+    }
+
     const updatedData = await User.findOneAndUpdate(
       filter,
       {
@@ -75,15 +126,16 @@ app.patch("/updateUser/:userId", async (req, res) => {
         location: location,
         age: age,
         gender: gender,
-        type: Customer,
+        skill: skill,
       },
       {
         returnDocument: "after",
+        runValidators: true,
       }
     );
     res.send("User created successfully." + updatedData);
   } catch (error) {
-    res.status(400).send("Something wrong !!!!");
+    res.status(400).send("Something wrong !!!!" + error.message);
   }
 });
 

@@ -736,17 +736,6 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    email: {
-      type: String,
-      required: true,
-      unique: true, // Ensures email addresses are unique across documents
-      lowercase: true,
-    },
-    age: {
-      type: Number,
-      min: 0, // Minimum value for age
-      max: 10,
-    },
     isActive: {
       type: Boolean,
       default: true, // Default value if not provided
@@ -813,26 +802,7 @@ This is a built-in middleware function in Express. It parses incoming requests w
 
 Returns middleware that only parses JSON and only looks at requests where the Content-Type header matches the type option.
 
-- Insert
-
-```javascript
-const user = await new User({
-  firstName: firstName,
-  lastName: lastName,
-  location: location,
-  age: age,
-  gender: gender,
-});
-
-try {
-  user.save();
-  res.send("User created successfully.");
-} catch (error) {
-  res.status(400).send("Something wrong !!!!");
-}
-```
-
-- Get
+- Get - [descending sorted data]
 
 ```javascript
   find().sort(\_id:'desc'),
@@ -846,25 +816,6 @@ try {
     }
 
   findOne().sort(\_id:'asc') - multiple same users but return on one, but which one return
-```
-
-- Update - `any new field in updates will be ignored by mongoose`
-
-```javascript
-const updatedData = await User.findOneAndUpdate(
-  filter,
-  {
-    firstName: firstName,
-    lastName: lastName,
-    location: location,
-    age: age,
-    gender: gender,
-    type: Customer,
-  },
-  {
-    returnDocument: "after",
-  }
-);
 ```
 
 - Delete
@@ -883,3 +834,192 @@ User.findByIdAndDelete(req.params?.userId);
 | Often idempotent (multiple identical PUT requests will have the same effect as a single one).                                      | Not necessarily idempotent, as applying the same patch multiple times might lead to different results if the patch describes an operation rather than a state. |
 
 ### 🎈 7. Data Sanitization & Schema Validations
+
+- In schema level, Custom validate/validate() only work for new document. To make it work for update also , we need to explicitly add 'runValidators: true',
+- Restrict random field update
+- Always add field validation, even its okay if not add it on UI.
+- Information leaking - showing email present is not
+
+`Validator` - npm i validator
+
+- `API level validation`
+
+  ```javascript
+  onst validator = require("validator");
+
+  const validateSignUpData = (req) => {
+    const { firstName, lastName, emailId, password, age } = req.body;
+
+    if (!firstName || !lastName) {
+      throw new Error("Name is not valid");
+    } else if (!validator.isEmail(emailId)) {
+      throw new Error("Email is not correct formated.");
+    } else if (!validator.isStrongPassword(password)) {
+      throw new Error("Password is not correct formatted.");
+    }
+  };
+
+  module.exports = { validateSignUpData };
+  ```
+
+- `Schema level validation`
+
+  ```javascript
+  const mongoose = require("mongoose");
+  const validator = require("validator");
+
+  const userSchema = new mongoose.Schema(
+    {
+      firstName: { type: String, required: true, maxLength: 20 },
+      lastName: { type: String, maxLength: 20 },
+      emailId: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        validator(value) {
+          if (!validator.isEmail(value)) {
+            throw new Error("Email is not correct formated.");
+          }
+        },
+      },
+      password: { type: String, required: true },
+      age: { type: Number, min: 18 },
+      gender: {
+        type: String,
+        validate(value) {
+          if (!["Male", "Female", "Other"].includes(value)) {
+            throw new Error("Gender data is not valid");
+          }
+        },
+      },
+      skill: {
+        type: [String],
+        validate(value) {
+          if (value.length > 2) {
+            throw new Error("You can add only 2 skills.");
+          }
+        },
+      },
+      about: { type: String, default: "This is a default about of a user" },
+      createdDate: { type: Date, default: Date.now },
+    },
+    {
+      timestamps: true,
+    }
+  );
+
+  const User = mongoose.model("users", userSchema);
+
+  module.exports = User;
+  ```
+
+`Encrypt/Decrypt password` - npm i bcrypt
+
+- Login :
+
+```javascript
+app.get("/loginUser", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ emailId: email });
+    if (!user) {
+      throw new Error("Invalid Credential!!");
+    }
+    console.log(password, user.password);
+
+    const isPasswordValid = await bcrypt.compare(password, user.password); // Decript the data
+
+    if (!isPasswordValid) {
+      throw new Error("Invalid Credential!!");
+    }
+
+    res.send("Login Successfully !!");
+  } catch (error) {
+    res.status(400).send("Something wrong !!!!" + error.message);
+  }
+});
+```
+
+- Insert :
+
+```javascript
+app.post("/signupUser", async (req, res) => {
+  try {
+    // validate data
+    validateSignUpData(req);
+
+    const { firstName, lastName, emailId, password, age, gender } = req.body;
+
+    // Encript the data
+    // bcrypt.hash(password, 10).then(function (hash) {
+    //   console.log(hash);
+    // });
+
+    const hashPassword = await bcrypt.hash(password, 10); // Encript the data
+
+    const user = new User({
+      firstName: firstName,
+      lastName: lastName,
+      emailId: emailId,
+      password: hashPassword,
+      age: age,
+      gender: gender,
+    });
+    await user.save();
+    res.send("User created successfully.");
+  } catch (error) {
+    res.status(400).send("Something wrong !!!!" + error.message);
+  }
+});
+```
+
+- Update - `any new field in updates will be ignored by mongoose`
+
+```javascript
+app.patch("/updateUser/:userId", async (req, res) => {
+  const userId = req.params?.userId;
+  const { firstName, lastName, location, age, gender, skill } = req.body;
+
+  const filter = { _id: userId };
+  const data = req.body;
+
+  try {
+    const updateAllowed = [
+      "firstName",
+      "lastName",
+      "password",
+      "age",
+      "skill",
+      "about",
+    ];
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      updateAllowed.includes(k)
+    );
+
+    if (!isUpdateAllowed) {
+      throw new Error("Update is not allowed");
+    }
+
+    const updatedData = await User.findOneAndUpdate(
+      filter,
+      {
+        firstName: firstName,
+        lastName: lastName,
+        location: location,
+        age: age,
+        gender: gender,
+        skill: skill,
+      },
+      {
+        returnDocument: "after",
+        runValidators: true,
+      }
+    );
+    res.send("User created successfully." + updatedData);
+  } catch (error) {
+    res.status(400).send("Something wrong !!!!" + error.message);
+  }
+});
+```
