@@ -2,6 +2,152 @@
 
 This document outlines key concepts for creating and managing an Express server, including folder structure, versioning, routing, request handling, and dynamic routes.
 
+### 🧨 **12. Database - SQL & NoSQL**
+
+`Database` - (https://en.wikipedia.org/wiki/Database)
+
+A database is an organized collection of data.
+
+`DBMS`
+Its a management system that interacts with end users & application (where we can do any operation (add/remove etc) in an efficient way).
+
+- **_Relational DB_** -
+
+  (MySQL, PostgreSQL) Structural Query Language
+
+  Now MySQL is managed by Oracle.
+
+  Here data store in table(row, column), we can create a new table with relation of current table id, no option to store data in form of array/object/ any higher order format.
+
+- **_NoSQL_** (MongoDB) (Not only SQL)
+
+  Here data store in collection in form of document, each item inside document is called field.
+
+- No need for joins.
+- No need for data normalization.
+
+  https://www.mongodb.com/resources/basics/databases/nosql-explained/nosql-vs-sql
+
+`RDMS (MySQL) NoSQL(MongoDB)`
+
+- Table, row, columns - Collection, document, fields
+- Structured Data - Unstructured data
+- Fixed Schema - flexible schema
+- Sql(Structure query lang) - Mongo(MQL),Neo4J(Cypher)
+- Tough horizontal scaling - Easy to scale horizontally + vertically
+- Relationships - foreign key + joins - Nested [ Relationships]
+- Read - heavy apps, transaction workloads - Real Time, Big data, distributed computing(\*\*\*)
+- Ex. Banking apps - Ex. Real Time analytics, Social Media
+
+### 🧨 **13. Creating a database & mongodb**
+
+1. We can download mongo in our sytem, and use it
+2. Mongodb will store our db on their cloud. we can create a new **Clusters** on official mongodb website & access it.
+
+- Community version - free version for developer - download on our local sytem or deploy to our cloud, mongodb will not help you.
+- Enterprise version - for company
+
+They both can be self managed(when deploy your db on server you have to make sure your db is always up & running/backed up properly/ or manged by mongodb).
+
+We can connect mongodb cluster to mongodb compass. Copy cluster string & connect with compass, then We can see data inside that database.
+
+enctest021
+L2jrIxW9PyDJAUdl
+
+## \***\*\*\*\*\***\*\*\***\*\*\*\*\***\_\***\*\*\*\*\***\*\*\***\*\*\*\*\***🎈🎈🎈 DEV TINDER 🎈🎈🎈\***\*\*\*\*\***\*\*\***\*\*\*\*\***\_\***\*\*\*\*\***\*\*\***\*\*\*\*\***
+
+### 🎈 **1. Microservice vs Monolith - How to build a project?**
+
+`Planning`
+
+- Requirements(gather requirements for application by PM, PM give a mock design + designer)
+  ⬇️
+- Design (Sciner eng, eng manager,tach lead - design documentation - tech stack, security practices HLD, LLd,Microservice/Monolith ..)
+  ⬇️
+- Development(SDE1/SDE2)
+  ⬇️
+- Testing(by Tester)
+  ⬇️
+- Deployment(DevOps team-manage server etc)
+  ⬇️
+- Maintenance (if new requirements come in then whole cycle again repeat from start)
+
+This model is called <ins>**Waterfall Model**</ins>.
+
+`Monolith vs Microservice :`
+
+- One big application, it does everything(backend, DB, frontend, auth, email, analytics) on same repository.
+- multiple service/application for multiple job(backend, DB, frontend, auth,...), multiple application communicating with each other
+
+- Code repo single multiple
+- Dev Speed slower faster
+- Scalability maintain big project/repo is very tough easier
+- Deployment tough easier
+- Tech stack stick to single tech(react/ng) independently use tech
+- Infra cost easier more cost - due multiple application
+- Complexity big project/repo is very tough easier
+- Fault Isolation if any fault occur difficult to find easier
+- Testing e2e testing easy tough
+- Ownership central multiple owner
+- Maintenances tough easier
+- Debugging slightly easier tough
+
+### 🎈 **2. Features, HLD, LLD & Planning**
+
+`Dev Tinder Planning :`
+
+- **_Requirements (by manager)_**
+
+  1. Create an account
+  2. login
+  3. update profile
+  4. feed page
+  5. send connection request
+  6. see our matches
+  7. see request we have sent/requested
+  8. update profile
+
+- **_Tech Planning (by architect/SSDE)_**
+
+  ->
+
+  Frontend microservice - React
+
+  Backend microservice - NodeJS, mongo DB
+
+  ->
+
+  _Security_
+
+  JWT token
+
+  ->
+
+  _LLD_
+
+  DB design
+
+  user collection - (first name, last name, location, age, preference, email, password etc)
+
+  connectionRequest - from, to, status (approved, rejected, ignored, pending)
+
+  ->
+
+  _API design {REST API}_
+
+  get, post,{patch, put},delete - http methods
+
+  POST / signup
+  POST / login
+  GET /profile
+  POST /profile
+  PATCH /profile
+  DELETE /profile
+  POST /sendRequest -> ignored/interested
+  POST /overviewRequest -> accept/request
+  GET /connections
+  GET /requests
+
 ### 🎈 **3. Creating an Express Server**
 
 `Folder Structure`
@@ -526,4 +672,214 @@ app.use((err, req, res, next) => {
 - Always Respond: Ensure every request eventually gets a response, even if it's an error. Otherwise, the client will hang.
 - next(error): Use next(error) to forward errors to your centralized handler, skipping normal middleware/routes.
 
-|
+### 🎈 6. Database,Schema & Models | Mongoose
+
+`Connecting to the Database`
+
+**In config file**
+
+- mongodb+srv://enctest021:L2jrIxW9PyDJAUdl@namastenode.3yevtr3.mongodb.net/ -> **_connect to cluster_**
+- mongodb+srv://enctest021:L2jrIxW9PyDJAUdl@namastenode.3yevtr3.mongodb.net/devTinder -> **_connect to a particular DB_**
+
+```javascript
+const mongoose = require("mongoose");
+
+// It's best practice to store sensitive information like DB URIs in environment variables.
+const DB_URI =
+  "mongodb+srv://enctest021:L2jrIxW9PyDJAUdl@namastenode.3yevtr3.mongodb.net/devTinder";
+
+async function connectDB() {
+  try {
+    await mongoose.connect(DB_URI);
+    console.log("MongoDB Connected Successfully!");
+  } catch (error) {
+    console.error("MongoDB Connection Error:", error);
+  }
+}
+```
+
+`Best way :`
+
+1. Connect to the DB at the entry point of your application (e.g., in app.js or server.js)
+2. Then start the Express server
+
+```javascript
+connectDB()
+  .then(() => {
+    console.error("Database connection is establised.");
+
+    app.listen(3000, () => {
+      console.log("server is successfully listning on port 3000.");
+    });
+  })
+  .catch((err) => {
+    console.error("Database is not connected");
+  });
+```
+
+`Schemas :`
+
+A Mongoose Schema defines the structure, data types, and validation rules for documents within a MongoDB collection.
+Identity for a collection.
+
+Example: For a user collection, fields might include firstName, lastName, email, location, etc.
+
+Naming Convention: Follow **_camelCase for schema names_** (e.g., userSchema, productSchema).
+
+```javascript
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema(
+  {
+    firstName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true, // Ensures email addresses are unique across documents
+      lowercase: true,
+    },
+    age: {
+      type: Number,
+      min: 0, // Minimum value for age
+      max: 10,
+    },
+    isActive: {
+      type: Boolean,
+      default: true, // Default value if not provided
+    },
+    createdDate: { type: Date, default: Date.now }, // This way also we can create date
+  },
+  {
+    // Schema options:
+    timestamps: true, // Adds `createdAt` and `updatedAt` fields automatically
+  }
+);
+
+const User = mongoose.model("User", userSchema);
+
+module.exports = User;
+```
+
+- Mongoose automatically adds `_id` (unique identifier) and `__v` (version key)
+- You should **never** manually create or manage `_id`.
+- To add date we can use `timestamps` or `manually create date`.
+
+`Models : `
+
+A Mongoose Model is a "fancy constructor compiled from Schema definitions."
+
+An instance of a model is called a `document`. Models are responsible for creating and reading documents from the underlying MongoDB database.
+
+Naming Convention: Model names should always start with a **_Capital Letter_** (e.g., User, Product, Order).
+
+`JavaScript Object vs. JSON :`
+
+- **JavaScript Object**:
+
+  - A native data structure in JavaScript. It can contain various data types, including functions, Date objects, undefined, and even circular references. It's an in-memory representation.
+
+    ```javascript
+    const jsObject = {
+      name: "Alice",
+      age: 30,
+      birthDate: new Date(),
+      greet: function () {
+        console.log("Hello");
+      },
+    };
+    ```
+
+- **JSON (JavaScript Object Notation)**:
+
+  - JSON can only represent a limited set of data types: strings, numbers, booleans, null, arrays, and objects (**key-value pairs where `keys are strings`**). Functions, Date objects (they become strings), and undefined are not directly supported in JSON.
+  - It's primarily used for data transmission between a server and web application, or as a data storage format.
+
+    ```javascript
+    {
+      "name": "Bob",
+      "age": 25,
+      "isStudent": true,
+      "hobbies": ["reading", "hiking"]
+    }
+    ```
+
+`app.ues(express.json()) `
+
+This is a built-in middleware function in Express. It parses incoming requests with JSON payloads and is based on body-parser.
+
+Returns middleware that only parses JSON and only looks at requests where the Content-Type header matches the type option.
+
+- Insert
+
+```javascript
+const user = await new User({
+  firstName: firstName,
+  lastName: lastName,
+  location: location,
+  age: age,
+  gender: gender,
+});
+
+try {
+  user.save();
+  res.send("User created successfully.");
+} catch (error) {
+  res.status(400).send("Something wrong !!!!");
+}
+```
+
+- Get
+
+```javascript
+  find().sort(\_id:'desc'),
+  const users = await User.find().sort({
+      _id: "desc",
+    });
+    if (users.length !== 0) {
+      res.send(users);
+    } else {
+      res.send("No user available.");
+    }
+
+  findOne().sort(\_id:'asc') - multiple same users but return on one, but which one return
+```
+
+- Update - `any new field in updates will be ignored by mongoose`
+
+```javascript
+const updatedData = await User.findOneAndUpdate(
+  filter,
+  {
+    firstName: firstName,
+    lastName: lastName,
+    location: location,
+    age: age,
+    gender: gender,
+    type: Customer,
+  },
+  {
+    returnDocument: "after",
+  }
+);
+```
+
+- Delete
+
+```javascript
+User.findByIdAndDelete(req.params?.userId);
+```
+
+`PUT VS PATCH :`
+
+| PUT (Full Replacement)                                                                                                             | PATCH (Partial Update)                                                                                                                                         |
+| :--------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Used to replace an entire resource with new data.                                                                                  | Used to apply partial modifications to a resource.                                                                                                             |
+| The request body should contain the complete, updated representation of the resource.                                              | The request body should contain only the changes (the fields to be updated).                                                                                   |
+| If a field is omitted from the PUT request, it implies that the field should be removed or set to its default value on the server. | Fields not included in the PATCH request are left untouched on the server.                                                                                     |
+| Often idempotent (multiple identical PUT requests will have the same effect as a single one).                                      | Not necessarily idempotent, as applying the same patch multiple times might lead to different results if the patch describes an operation rather than a state. |
+
+### 🎈 7. Data Sanitization & Schema Validations
