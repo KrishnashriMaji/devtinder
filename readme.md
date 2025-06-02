@@ -2177,7 +2177,7 @@ User.findByIdAndDelete(req.params?.userId);
 
 ---
 
-### 🎈 7. Data Sanitization & Schema Validations
+### 🎈 7. Data Sanitization, Schema Validations, Password encrypting
 
 - In schema level, Custom validate/validate() only work for new document. To make it work for update also , we need to explicitly add 'runValidators: true',
 - Restrict random field update
@@ -2369,3 +2369,222 @@ app.patch("/updateUser/:userId", async (req, res) => {
 ```
 
 ---
+
+### 🎈 8. Authentication, JWT & Cookies
+
+- `Login & Token Generation:`
+
+Upon successful user login (e.g., after validating credentials against the database), generate a JWT token (which is unique for every user) and store in browser cookie.
+
+`JWT Structure:`
+
+- **Header:** Contains token type and signing algorithm. (red color)
+- **Payload:** Contains claims (user data, permissions, expiration time - exp). Do not store sensitive information here. (pink color)
+- **Signature:** Used to verify the token's authenticity and integrity. It's created using the header, payload, and the secret key. (blue color)
+
+> npm i jsonwebtoken
+
+```javascript
+const token = await jwt.sign(
+  { _id: user._id }, // relevant non-sensitive data, hidden data
+  "devTinder@2025", // 'YOUR_SECRET_KEY'
+  {
+    expiresIn: "1d",
+  }
+);
+```
+
+- The YOUR_SECRET_KEY should be a strong, unique secret stored securely (e.g., in environment variables) and known only to the server.
+
+`Storing JWT in Cookies:`
+
+The generated JWT is then sent to the client and stored in cookie for security. This prevents client-side JavaScript from accessing the token directly, mitigating XSS attacks.
+
+Express's res.cookie() method is used:
+
+https://expressjs.com/en/5x/api.html#res.cookie
+https://expressjs.com/en/5x/api.html#req.cookies
+
+```javascript
+res.cookie("token", token, {
+  httpOnly: true, // only when sent over HTTPS
+  expires: new Date(Date.now() + 8 * 3600000), // 8 days
+});
+```
+
+- You can expiry of middleware & cookies.
+- if any expired cookie pass on api and after validation, it doesn't match, so ask user to re login.
+
+`Token Transmission & Verification:`
+
+For subsequent API requests, the browser automatically includes the cookie (containing the JWT) in the request headers.
+
+The <ins>cookie-parser</ins> middleware (Recommended by express team and develop by them) is used on the server to parse these cookies:
+
+```javascript
+app.use(cookieParser());
+```
+
+The token can then be accessed via <ins>req.cookies.token</ins>.
+
+Ref - https://expressjs.com/en/resources/middleware/cookie-parser.html
+
+`Authentication Middleware:`
+
+A custom middleware function is used to protect routes that require authentication. This middle will be called whenevr a api calls is being called after successfully login.
+
+This middleware retrieves the token from req.cookies.token.
+
+It then verifies the token using <ins>jwt.verify(token, 'YOUR_SECRET_KEY')</ins>.
+
+```javascript
+const User = require("../models/user");
+const jwt = require("jsonwebtoken");
+
+const userAuth = async (req, res, next) => {
+  try {
+    const { token } = req.cookies;
+    if (!token) {
+      res.status(400).send("Token invalid !!");
+    }
+    const decodedObj = await jwt.verify(token, "devTinder@2025");
+    const { _id } = decodedObj;
+    const user = await User.findOne({ _id: _id });
+    if (!user) {
+      throw new Error("user not found !!");
+    }
+    req.user = user;
+    next();
+  } catch (error) {
+    res.status(400).send("Something wrong !!!!" + err.message);
+  }
+};
+
+module.exports = {
+  userAuth,
+};
+```
+
+```javascript
+profileRouter.get("/profile/view", userAuth, async (req, res) => {
+  try {
+    res.send(req.user);
+  } catch (err) {
+    res.status(400).send("Something wrong !!!!" + err.message);
+  }
+});
+```
+
+`Logout:` - Chaining in express
+
+To log a user out, the cookie containing the JWT is cleared:
+
+```javascript
+app.get("/user/logout", async (req, res) => {
+  res
+    .cookie("token", "", { expires: new Date(0) })
+    .send("Logout Successfully !!"); // Chaining
+});
+```
+
+`Mongoose Schema Methods :`
+
+We can add handler method that only attach to that schema, kind of helper method. Offload tasks like password validation or JWT generation to the model itself.. It s best practice. It makes code modular, testable, cleaner.
+
+Suppose we create a instance of any model this methods will only attached to that instances.
+This approach keeps authentication logic organized and makes the User model responsible for user-specific operations.
+
+Important: Always use "normal function()" declarations for these methods, not arrow functions (=>). Arrow functions do not bind their own this context, which is necessary here to refer to the specific user instance.
+
+```javascript
+// Method to generate a JWT for the user instance
+
+userSchema.methods.getJWT = async function () {
+  const user = this;
+  const token = await jwt.sign({ \_id: user.\_id }, "devTinder@2025", {
+  expiresIn: "1d",
+});
+
+return token;
+};
+
+// Method to compare entered password with hashed password
+
+userSchema.methods.validatePassword = async function (passwordInputByUser) {
+  const user = this;
+  const isPasswordValid = await bcrypt.compare(
+  passwordInputByUser,
+  user.password
+  );
+};
+```
+
+```javascript
+
+  const user = await User.findOne({ username: req.body.username });
+  if (!user) {
+  return res.status(401).send('Invalid credentials');
+  }
+
+  const isValidPassword = await user.validatePassword(req.body.password);  // schema helper method
+
+  if (!isValidPassword) {
+  return res.status(401).send('Invalid credentials');
+  }
+
+  const token = user.getJWT();  // schema helper method
+
+  res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 3600000 });
+  res.status(200).json({ message: 'Logged in successfully', userId: user.\_id });
+
+```
+
+---
+
+### 🎈 7. Express Router
+
+`Purpose: `
+
+Routers help in <ins>grouping related API routes</ins> (e.g., all user-related routes under /api/users, product routes under /api/products). This makes the application more modular, easier to maintain and helps to keep your main application file cleaner and your route definitions more organized.
+
+`How it Works:`
+
+- You create an instance of a router:
+
+```javascript
+const express = require("express");
+const profileRouter = express.Router();
+```
+
+- Define routes on this router instance, similar to how you define them on the app object.
+
+```javascript
+profileRouter.get("/profile/view", userAuth, async (req, res) => {
+  try {
+    res.send(req.user);
+  } catch (err) {
+    res.status(400).send("Something wrong !!!!" + err.message);
+  }
+});
+
+module.exports = profileRouter;
+```
+
+- Integration in app.js: The main application file (often app.js or server.js) then <ins>uses these routers as middleware</ins>, typically prefixing them with a base path:
+
+```javascript
+// In app.js
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+
+app.use("/", authRouter);
+app.use("/", profileRouter);
+```
+
+- Here code will execute on the same fashion, Suppose if '/profile/view' is requested by client, then server will first check on authrouter, if not found then move to next, to next, it will execute same way line by line like how in app.js file code is being executed.
+
+`Similarity to app:`
+
+Router instances are like "mini-applications," capable of having their own middleware and routing systems, but they depend on being <ins>mounted in the main app</ins>.
+
+### 🎈 8. Express Router

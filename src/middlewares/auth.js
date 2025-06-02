@@ -1,20 +1,25 @@
-const authAdmin = (req, res, next) => {
-  if (req.body.token === "XYZ") {
-    next(); // middleware
-  } else {
-    res.status(401).send("Admin is not authorised");
-  }
-};
+const User = require("../models/user");
+const jwt = require("jsonwebtoken");
 
-const userAdmin = (req, res, next) => {
-  if (req.body.token === "XYZ") {
-    next(); // middleware
-  } else {
-    res.status(401).send("Admin is not authorised");
+const userAuth = async (req, res, next) => {
+  try {
+    const { token } = req.cookies;
+    if (!token) {
+      res.status(400).send("Token invalid !!");
+    }
+    const decodedObj = await jwt.verify(token, "devTinder@2025");
+    const { _id } = decodedObj;
+    const user = await User.findOne({ _id: _id });
+    if (!user) {
+      throw new Error("user not found !!");
+    }
+    req.user = user;
+    next();
+  } catch (error) {
+    res.status(400).send("Something wrong !!!!" + err.message);
   }
 };
 
 module.exports = {
-  authAdmin,
-  userAdmin,
+  userAuth,
 };
