@@ -48,13 +48,13 @@ authRouter.post("/user/signup", async (req, res) => {
     //   console.log(hash);
     // });
 
-    const hashPassword = await bcrypt.hash(password, 10);
+    // const hashPassword = await bcrypt.hash(password, 10);
 
     const user = new User({
       firstName: firstName,
       lastName: lastName,
       emailId: emailId,
-      password: hashPassword,
+      password: password,
       age: age,
       gender: gender,
     });

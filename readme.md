@@ -2587,4 +2587,141 @@ app.use("/", profileRouter);
 
 Router instances are like "mini-applications," capable of having their own middleware and routing systems, but they depend on being <ins>mounted in the main app</ins>.
 
-### 🎈 8. Express Router
+### 🎈 8. Logical DB queries & Compound Index
+
+`Mongoose Schema Validation`:
+
+Mongoose allows you to define validation rules directly within your schema to ensure data integrity before saving documents to the database.
+
+Ref: https://mongoosejs.com/docs/validation.html
+
+`Custom Error Messages`:
+
+There are two equivalent ways to set the validator error message :
+
+```javascript
+
+// Array syntax: min: [6, 'Must be at least 6, got {VALUE}']
+// Object syntax: enum: { values: ["ignore","interested","accepted","rejected"], message: '{VALUE} is not correct status' }
+
+
+- enum: {
+        values: ["ignore","interested","accepted","rejected"],
+        message: `${VALUE} is not a valid correct status`,
+      },
+or,
+      validate(value) {
+        if (!["ignore","interested","accepted","rejected"].includes(value)) {
+          throw new Error("Status is not valid");
+        }
+      },
+
+```
+
+`MongoDB Logical Queries`:
+
+MongoDB provides powerful logical query operators to combine multiple conditions.
+
+- $or: Returns documents where at least one of the conditions is true.
+
+  ```javascript
+  const existingConnection = await ConnectionRequest.findOne({
+    $or: [
+      { toUserId, fromUserId },
+      { toUserId: fromUserId, fromUserId: toUserId },
+    ],
+  });
+  ```
+
+- $and: Returns documents where all the conditions are true.
+- $not: Inverts the effect of a query expression.
+- $nor: Returns documents where all of the conditions are false.
+
+`Mongoose Middleware (pre hooks)`:
+
+Mongoose middleware (also known as pre/post hooks) are functions that execute at specific stages of the document lifecycle.
+
+The pre method is a middleware that runs before a document is saved (save) or validated (validate), among other operations. It's useful for tasks like hashing passwords, generating slugs, or modifying data before it hits the database.
+
+Ref: https://mongoosejs.com/docs/middleware.html#pre
+
+```javascript
+userSchema.pre("save", async function (next) {
+  const user = this;
+
+  if (this.isModified("password")) {
+    const hashPassword = await bcrypt.hash(user.password, 10);
+    user.password = hashPassword;
+  }
+  next();
+});
+```
+
+`Database Indexing in MongoDB`:
+
+Indexes are special data structures that store a small portion of the collection's data in an easy-to-traverse form. They significantly improve the speed of queries by reducing the amount of data the database has to scan.
+
+Types of Indexes: <br/>
+
+- Single Field Index (index: true): Speeds up queries and sorts on a single field.
+
+```javascript
+
+{ firstName: { type: String, index: true } }
+
+```
+
+- Unique Index (unique: true): <br/>
+  - Ensures that no two documents have the same value for the indexed field.
+  - MongoDB automatically creates an index when unique: true is set.
+  - Unique indexes are generally faster for lookups than regular indexes because the database knows it only needs to find one matching document.
+
+```javascript
+
+{ email: { type: String, unique: true } }
+
+```
+
+- Sparse Index (sparse: true): Indexes only documents that have the indexed field. Documents without the indexed field are omitted from the index.
+
+- Compound Indexes : <br/>
+  A compound index includes references to multiple fields. They are crucial for optimizing queries that involve filtering or sorting by a combination of fields.
+
+Scenario: If you frequently query your connectionRequestSchema using both fromUserId and toUserId (e.g., db.connectionRequests.find({ fromUserId: '...', toUserId: '...' })), a compound index on both fields will be far more efficient than separate single-field indexes.
+
+Ref : https://www.mongodb.com/docs/manual/core/indexes/index-types/index-compound/
+
+```javascript
+connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 }); // 1 for ascending order
+```
+
+This index will be used effectively when you query by fromUserId alone, or by fromUserId and toUserId together. However, it won't be used efficiently if you only query by toUserId. The order of fields in a compound index matters.
+
+`Why Do We Need Indexes?`
+
+Indexes are like the table of contents or an alphabetical index in a book. Without them, finding specific information would require scanning the entire book <ins>page by page</ins> (a "full collection scan" in database terms). With an index, you can quickly jump to the relevant section.
+
+- Advantage:
+
+Primarily, indexes drastically speed up read operations (queries, sorts, aggregations). They are indispensable for applications with large datasets where performance is critical.
+
+- Disadvantages:
+
+  - Increased Storage Space: Indexes consume disk space, as they are separate data structures.
+  - Slower Write Operations: Every time a document is inserted, updated, or deleted, the corresponding indexes also need to be updated. This overhead can slow down write operations.
+  - Memory Usage: Indexes are often held in RAM for faster access, increasing memory consumption.
+  - Performance Overhead During Creation: Building indexes on large collections can be resource-intensive.
+  - Over-indexing: Creating too many indexes, or indexes on fields that are rarely queried, can lead to more overhead than benefit, potentially even "hanging" or degrading database performance due to the constant updates.
+
+`Best Practices for Indexing`:
+
+Index Based on Query Patterns: Focus on indexing fields frequently used in find(), sort(), and aggregation pipeline stages.
+
+`⚠️ Security Considerations`:
+
+- When designing and writing database queries and API endpoints, always think about corner cases and potential vulnerabilities. Robust validation, proper authentication/authorization, and careful query construction are essential to prevent common attacks like:
+- Injection Attacks: Ensuring all input is properly sanitized and validated prevents malicious code from being executed.
+- Denial of Service (DoS): Unoptimized queries or lack of rate limiting can allow attackers to overwhelm your database.
+- Information Disclosure: Preventing errors from leaking sensitive database or server information.
+
+### 🎈 9. Ref,Populate & thought process of writing APIs

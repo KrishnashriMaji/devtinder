@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema(
     age: { type: Number, min: 18 },
     gender: {
       type: String,
+      // enum: {
+      //   values : ["Male", "Female", "Other"],
+      //   message : `${VALUE} is not a valid gender type`
+      // },
       validate(value) {
         if (!["Male", "Female", "Other"].includes(value)) {
           throw new Error("Gender data is not valid");
@@ -43,6 +47,18 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+userSchema.index({ firstName: 1, lastName: 1 });
+
+userSchema.pre("save", async function (next) {
+  const user = this;
+
+  if (this.isModified("password")) {
+    const hashPassword = await bcrypt.hash(user.password, 10);
+    user.password = hashPassword;
+  }
+  next();
+});
 
 userSchema.methods.getJWT = async function () {
   const user = this;
