@@ -2620,6 +2620,8 @@ or,
 
 `MongoDB Logical Queries`:
 
+ref: https://www.mongodb.com/docs/manual/reference/operator/query-logical/
+
 MongoDB provides powerful logical query operators to combine multiple conditions.
 
 - $or: Returns documents where at least one of the conditions is true.
@@ -2719,9 +2721,83 @@ Index Based on Query Patterns: Focus on indexing fields frequently used in find(
 
 `⚠️ Security Considerations`:
 
-- When designing and writing database queries and API endpoints, always think about corner cases and potential vulnerabilities. Robust validation, proper authentication/authorization, and careful query construction are essential to prevent common attacks like:
+- When designing and writing database queries and API endpoints, <ins>always think about corner cases</ins> and potential vulnerabilities. Robust validation, proper authentication/authorization, and careful query construction are essential to prevent common attacks like:
 - Injection Attacks: Ensuring all input is properly sanitized and validated prevents malicious code from being executed.
 - Denial of Service (DoS): Unoptimized queries or lack of rate limiting can allow attackers to overwhelm your database.
 - Information Disclosure: Preventing errors from leaking sensitive database or server information.
 
-### 🎈 9. Ref,Populate & thought process of writing APIs
+### 🎈 9. Ref,Populate, Query Operators
+
+`Building relation between 2 collections : `
+
+- 1. loop the result and fetch each user data individually
+- 2. use -> ref: 'User'
+
+`Populate reference data : `
+
+- .populate("fromUserId",["firstName","lastName"])
+- .populate("fromUserId","firstName lastName");
+
+`Query Comparision:`
+
+Ref : https://www.mongodb.com/docs/manual/reference/operator/query-comparison/
+
+- $eq,
+- $gt,
+- $gte,
+- $in,
+- $lt,
+- $lte,
+- $ne,
+- $nin
+
+```javascript
+const users = await User.find({
+  $and: [
+    { _id: { $nin: Array.from(hideUserFromFeed) } }, // not in this array
+    { _id: { $ne: loggedInUser._id } }, // not equal to user
+  ],
+})
+  .select("firstName lastName age gender skill")
+  .sort({ _id: "desc" })
+  .skip(skip)
+  .limit(limit);
+```
+
+`Aggregation Mapping Chart :`
+
+ref : https://www.mongodb.com/docs/manual/reference/sql-aggregation-comparison/
+
+- COUNT(\_),
+- SUM(price) AS total,
+- GROUP BY,
+- HAVING count(\_) > 1,
+- ORDER BY,
+- WHERE status = 'A'
+
+```javascript
+// sql
+SELECT cust_id,
+       SUM(price) as total
+FROM orders
+WHERE status = 'A'
+GROUP BY cust_id
+HAVING total > 250
+
+
+// mongo
+db.orders.aggregate( [
+   { $match: { status: 'A' } },
+   {
+     $group: {
+        _id: "$cust_id",
+        total: { $sum: "$price" }
+     }
+   },
+   { $match: { total: { $gt: 250 } } }
+] )
+
+```
+
+Mongo DB practical Example ref :
+https://www.practical-mongodb-aggregations.com/intro/introducing-aggregations.html

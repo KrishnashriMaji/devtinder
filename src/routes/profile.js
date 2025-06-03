@@ -1,32 +1,15 @@
 const express = require("express");
 const profileRouter = express.Router();
 const User = require("../models/user");
-const jwt = require("jsonwebtoken");
 const { userAuth } = require("../middlewares/auth");
 const { validateEditProfileData } = require("../utils/validate");
 
 // Read a user
 profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
-    res.send(req.user);
-  } catch (err) {
-    res.status(400).send("Something wrong !!!!" + err.message);
-  }
-});
-
-// Read all users
-profileRouter.get("/user/feed", async (req, res) => {
-  try {
-    const users = await User.find().sort({
-      _id: "desc",
-    });
-    if (users.length !== 0) {
-      res.send(users);
-    } else {
-      res.send("No user available.");
-    }
-  } catch (err) {
-    res.status(400).send("Something wrong !!!!");
+    res.json({ data: req.user });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 });
 
@@ -70,9 +53,9 @@ profileRouter.patch("/profile/edit/:userId", async (req, res) => {
         runValidators: true,
       }
     );
-    res.send("User created successfully." + updatedData);
+    res.json({ message: "User created successfully.", data: updatedData });
   } catch (error) {
-    res.status(400).send("Something wrong !!!!" + error.message);
+    res.status(400).json({ message: error.message });
   }
 });
 
@@ -91,19 +74,17 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
       data: loggedInUser,
     });
   } catch (error) {
-    res.status(400).send("Something wrong !!!!" + error.message);
+    res.status(400).json({ message: error.message });
   }
 });
 
 // Delete
 profileRouter.delete("/user/delete/:userId", async (req, res) => {
-  console.log(req.params?.userId);
-
   try {
     await User.findByIdAndDelete(req.params?.userId);
-    res.send("User deleted successfully.");
+    res.json({ message: "User deleted successfully." });
   } catch (error) {
-    res.status(400).send("Something wrong !!!!");
+    res.status(400).json({ message: error.message });
   }
 });
 

@@ -1,4 +1,6 @@
 const validator = require("validator");
+const ConnectionRequest = require("../models/connectionRequest");
+const User = require("../models/user");
 
 const validateSignUpData = (req) => {
   const { firstName, lastName, emailId, password, age } = req.body;
@@ -52,8 +54,55 @@ const validateEditPassword = async (req, res) => {
   }
 };
 
+const validateSendRequest = async (toUserId, fromUserId, status) => {
+  const allowedStatus = ["interested", "ignored"];
+  if (!allowedStatus.includes(status)) {
+    throw new Error("Invalid status");
+  }
+  const existingUser = await User.findById(toUserId);
+
+  if (!existingUser) {
+    throw new Error("User is not valid");
+  }
+
+  const existingConnection = await ConnectionRequest.findOne({
+    $or: [
+      { toUserId, fromUserId },
+      { toUserId: fromUserId, fromUserId: toUserId },
+    ],
+  });
+  if (existingConnection) {
+    throw new Error("Connection is already exist");
+  }
+};
+
+const validateReceiveRequest = async (req) => {
+  const requestId = req.params.requestId;
+  const loggedInUserId = req.user._id;
+  const status = req.params.status;
+
+  const allowedStatus = ["accepted", "rejected"];
+
+  if (!allowedStatus.includes(status)) {
+    throw new Error("Invalid status");
+  }
+  const connectionRequest = await ConnectionRequest.findOne({
+    _id: requestId,
+    toUserId: loggedInUserId,
+    status: "interested",
+  });
+
+  if (!connectionRequest) {
+    throw new Error("Connection is not exist");
+  }
+
+  return connectionRequest;
+};
+
 module.exports = {
   validateSignUpData,
   validateEditProfileData,
   validateEditPassword,
+  validateReceiveRequest,
+  validateSendRequest,
 };

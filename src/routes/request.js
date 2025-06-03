@@ -3,8 +3,12 @@ const requestRouter = express.Router();
 const { userAuth } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
+const {
+  validateSendRequest,
+  validateReceiveRequest,
+} = require("../utils/validate");
 
-requestRouter.get(
+requestRouter.patch(
   "/request/send/:status/:userId",
   userAuth,
   async (req, res) => {
@@ -13,27 +17,7 @@ requestRouter.get(
     const status = req.params.status;
 
     try {
-      const allowedStatus = ["interested", "ignored"];
-      if (!allowedStatus.includes(status)) {
-        return res.status(400).send("Invalid status");
-      }
-      console.log(toUserId, fromUserId);
-
-      const existingUser = await User.findById(toUserId);
-
-      if (!existingUser) {
-        return res.status(400).send("User is not valid");
-      }
-
-      const existingConnection = await ConnectionRequest.findOne({
-        $or: [
-          { toUserId, fromUserId },
-          { toUserId: fromUserId, fromUserId: toUserId },
-        ],
-      });
-      if (existingConnection) {
-        return res.status(400).send("Connection is already exist");
-      }
+      await validateSendRequest(toUserId, fromUserId, status);
       const connectionRequest = new ConnectionRequest({
         toUserId,
         fromUserId,
@@ -46,7 +30,28 @@ requestRouter.get(
         data,
       });
     } catch (error) {
-      res.status(400).send("Somthing wrong - " + error.message);
+      res.status(400).json({ message: error.message });
+    }
+  }
+);
+
+requestRouter.patch(
+  "/request/receive/:status/:requestId",
+  userAuth,
+  async (req, res) => {
+    const status = req.params.status;
+    try {
+      const connectionRequest = await validateReceiveRequest(req);
+
+      connectionRequest.status = status;
+
+      const data = await connectionRequest.save();
+      res.json({
+        message: `Connection request ${status}`,
+        data,
+      });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
     }
   }
 );

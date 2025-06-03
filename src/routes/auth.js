@@ -26,30 +26,20 @@ authRouter.get("/user/login", async (req, res) => {
         httpOnly: true,
         expires: new Date(Date.now() + 8 * 3600000),
       });
-      res.send("Login Successfully !!");
+      res.json({ message: "Login Successfully !!" });
     } else {
       throw new Error("Invalid Credential!!");
     }
   } catch (error) {
-    res.status(400).send("Something wrong !!!!" + error.message);
+    res.status(400).json({ message: error.message });
   }
 });
 
 // Insert
 authRouter.post("/user/signup", async (req, res) => {
   try {
-    // validate data
     validateSignUpData(req);
-
     const { firstName, lastName, emailId, password, age, gender } = req.body;
-
-    // Encript the data
-    // bcrypt.hash(password, 10).then(function (hash) {
-    //   console.log(hash);
-    // });
-
-    // const hashPassword = await bcrypt.hash(password, 10);
-
     const user = new User({
       firstName: firstName,
       lastName: lastName,
@@ -59,9 +49,9 @@ authRouter.post("/user/signup", async (req, res) => {
       gender: gender,
     });
     await user.save();
-    res.send("User created successfully.");
+    res.json({ message: "User created successfully." });
   } catch (error) {
-    res.status(400).send("Something wrong !!!!" + error.message);
+    res.status(400).json({ message: error.message });
   }
 });
 
@@ -69,7 +59,7 @@ authRouter.post("/user/signup", async (req, res) => {
 authRouter.get("/user/logout", async (req, res) => {
   res
     .cookie("token", "", { expires: new Date(0) })
-    .send("Logout Successfully !!");
+    .json({ message: "Logout Successfully !!" });
 });
 
 // Forgot Password
@@ -80,9 +70,9 @@ authRouter.patch("/user/forgotPassword", userAuth, async (req, res) => {
     const hashPassword = await bcrypt.hash(req.body.newPassword, 10);
     loggedInUser["password"] = hashPassword;
     await loggedInUser.save();
-    res.send("Password updated successfully.");
+    res.json({ message: "Password updated successfully." });
   } catch (error) {
-    res.status(400).send("Something wrong !!!!" + error.message);
+    res.status(400).json({ message: error.message });
   }
 });
 
