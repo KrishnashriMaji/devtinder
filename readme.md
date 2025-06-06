@@ -2905,13 +2905,13 @@ PORT=3000
 
 dotenv will take all defined thing from .env file and attached to a big global object.
 
-- We can't add .env on frontend repo, because code will run on browser, but browser does not know what is process.env.
+- <ins>We can't add .env on frontend repo</ins>, because code will run on browser, but browser does not know what is process.env.
 
   To make there dynamic :
 
   - export const BASE_URL = location.hostname === "localhost" ? "http://localhost:3000/" : "/api/";
 
-- On backend GitHub also, we can't push .env file, we have to manually add .env on cloud
+- <ins>On backend GitHub also, we can't push .env file</ins>, we have to manually `add .env on cloud`
   - sudo nano .env
   - pm2 restart 0
 
