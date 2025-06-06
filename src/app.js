@@ -8,6 +8,8 @@ const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 const cookieParser = require("cookie-parser");
 
+require("dotenv").config();
+
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -26,8 +28,10 @@ connectDB()
   .then(() => {
     console.error("Database connection is establised.");
 
-    app.listen(3000, () => {
-      console.log("server is successfully listning on port 3000.");
+    app.listen(process.env?.PORT, () => {
+      console.log(
+        `server is successfully listning on port ${process.env?.PORT}.`
+      );
     });
   })
   .catch((err) => {

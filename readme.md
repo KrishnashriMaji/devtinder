@@ -2,7 +2,7 @@
 
 This document outlines key concepts for creating and managing an Express server, including folder structure, versioning, routing, request handling, and dynamic routes.
 
-### 🎈 **1. Introduction to NodeJS**
+## 🎈 **1. Introduction to NodeJS**
 
 `What is Node.js?`
 
@@ -33,7 +33,7 @@ This document outlines key concepts for creating and managing an Express server,
 
 ---
 
-### 🎈 **2. JS on server**
+## 🎈 **2. JS on server**
 
 `What is a server?`
 
@@ -70,7 +70,7 @@ JS(high level language) -> V8(C++) translate to -> machine and assembly code
 
 ---
 
-### 🎈 **3. JS on server**
+## 🎈 **3. JS on server**
 
 `Writing code :`
 
@@ -109,7 +109,7 @@ It provides a consistent way to access the global object without worrying about 
 
 ---
 
-### 🎈 **4. Module Export & Requirements**
+## 🎈 **4. Module Export & Requirements**
 
 A new file created means create a new module.
 
@@ -202,7 +202,7 @@ In general, a module can be a single file or a folder. A module is essentially a
 
 ---
 
-### 🎈 **5. Diving into the NodeJS Github repo.**
+## 🎈 **5. Diving into the NodeJS Github repo.**
 
 Behind the scenes
 
@@ -368,7 +368,7 @@ This function:
 
 ---
 
-### 🎈 **6. libuv & async IO**
+## 🎈 **6. libuv & async IO**
 
 > "Node.js has an event-driven architecture capable of asynchronous I/O.”
 
@@ -521,7 +521,7 @@ libuv is a multi-platform support library with a focus on asynchronous I/O.
 
 ---
 
-### 🎈 **7. sync, async,setTimeoutZero - code**
+## 🎈 **7. sync, async,setTimeoutZero - code**
 
 ```javascript
 const https = require("node:https");
@@ -615,7 +615,7 @@ The Reason:
 
 ---
 
-### 🎈 **8. Deep dive into v8 JS Engine**
+## 🎈 **8. Deep dive into v8 JS Engine**
 
 read documentation on web -> https://v8.dev/docs, https://v8.dev/blog
 
@@ -771,7 +771,7 @@ Check: https://v8.dev/
 
 ---
 
-### 🎈 **9. libuv & Event Loop**
+## 🎈 **9. libuv & Event Loop**
 
 **_<ins>You're diving into the core of Node.js's asynchronous handling with libuv .</ins>_**
 
@@ -1039,7 +1039,7 @@ promise resolve
 
 ---
 
-### 🎈 **10. Thread pool in libuv**
+## 🎈 **10. Thread pool in libuv**
 
 Thread means its a container which does some operation/runs a spice of code.
 
@@ -1146,7 +1146,7 @@ Pipes in Node.js are a powerful feature for managing the flow of data between st
 
 ---
 
-### 🎈 **11. Creating a Server**
+## 🎈 **11. Creating a Server**
 
 `What is a server?`
 
@@ -1330,7 +1330,7 @@ We use **Express** to create a server. Express is a framework built on top of No
 
 ---
 
-### 🧨 **12. Database - SQL & NoSQL**
+## 🧨 **12. Database - SQL & NoSQL**
 
 `Database` - (https://en.wikipedia.org/wiki/Database)
 
@@ -1369,7 +1369,7 @@ Its a management system that interacts with end users & application (where we ca
 
 ---
 
-### 🧨 **13. Creating a database & mongodb**
+## 🧨 **13. Creating a database & mongodb**
 
 1. We can download mongo in our sytem, and use it
 2. Mongodb will store our db on their cloud. we can create a new **Clusters** on official mongodb website & access it.
@@ -1388,7 +1388,7 @@ L2jrIxW9PyDJAUdl
 
 ## \***\*\*\*\*\***\*\*\***\*\*\*\*\***\_\***\*\*\*\*\***\*\*\***\*\*\*\*\***🎈🎈🎈 DEV TINDER 🎈🎈🎈\***\*\*\*\*\***\*\*\***\*\*\*\*\***\_\***\*\*\*\*\***\*\*\***\*\*\*\*\***
 
-### 🎈 **1. Microservice vs Monolith - How to build a project?**
+## 🎈 **1. Microservice vs Monolith - How to build a project?**
 
 `Planning`
 
@@ -1426,7 +1426,7 @@ This model is called <ins>**Waterfall Model**</ins>.
 
 ---
 
-### 🎈 **2. Features, HLD, LLD & Planning**
+## 🎈 **2. Features, HLD, LLD & Planning**
 
 `Dev Tinder Planning :`
 
@@ -1484,7 +1484,7 @@ This model is called <ins>**Waterfall Model**</ins>.
 
 ---
 
-### 🎈 **3. Creating an Express Server**
+## 🎈 **3. Creating an Express Server**
 
 `Folder Structure`
 
@@ -1521,7 +1521,7 @@ Install it globally. The -g flag means it's installed globally on your system, m
 
 ---
 
-### 🎈 4. Routing & Request Handler
+## 🎈 4. Routing & Request Handler
 
 `Route Sequence Matters`
 
@@ -1606,7 +1606,7 @@ app.get("/user/:userId/:name/:password", (req, res) => {
 
 ---
 
-### 🎈 5. Route Handlers & Middleware
+## 🎈 5. Route Handlers & Middleware
 
 `Route Handlers`
 
@@ -1825,7 +1825,7 @@ Output: 2nd Response
 Console Log: 1st Response Log!!, 2nd Response Log!!
 ```
 
-#### Middleware
+### Middleware
 
 `What is Middleware and Why Do We Need It?`
 
@@ -2014,7 +2014,7 @@ app.use((err, req, res, next) => {
 
 ---
 
-### 🎈 6. Database,Schema & Models | Mongoose
+## 🎈 6. Database,Schema & Models | Mongoose
 
 `Connecting to the Database`
 
@@ -2177,7 +2177,7 @@ User.findByIdAndDelete(req.params?.userId);
 
 ---
 
-### 🎈 7. Data Sanitization, Schema Validations, Password encrypting
+## 🎈 7. Data Sanitization, Schema Validations, Password encrypting
 
 - In schema level, Custom validate/validate() only work for new document. To make it work for update also , we need to explicitly add 'runValidators: true',
 - Restrict random field update
@@ -2370,7 +2370,7 @@ app.patch("/updateUser/:userId", async (req, res) => {
 
 ---
 
-### 🎈 8. Authentication, JWT & Cookies
+## 🎈 8. Authentication, JWT & Cookies
 
 - `Login & Token Generation:`
 
@@ -2387,7 +2387,7 @@ Upon successful user login (e.g., after validating credentials against the datab
 ```javascript
 const token = await jwt.sign(
   { _id: user._id }, // relevant non-sensitive data, hidden data
-  "devTinder@2025", // 'YOUR_SECRET_KEY'
+  process.env?.JWT_SECRECT_KEY, // 'YOUR_SECRET_KEY'
   {
     expiresIn: "1d",
   }
@@ -2541,7 +2541,7 @@ userSchema.methods.validatePassword = async function (passwordInputByUser) {
 
 ---
 
-### 🎈 7. Express Router
+## 🎈 7. Express Router
 
 `Purpose: `
 
@@ -2587,7 +2587,9 @@ app.use("/", profileRouter);
 
 Router instances are like "mini-applications," capable of having their own middleware and routing systems, but they depend on being <ins>mounted in the main app</ins>.
 
-### 🎈 8. Logical DB queries & Compound Index
+---
+
+## 🎈 8. Logical DB queries & Compound Index
 
 `Mongoose Schema Validation`:
 
@@ -2726,7 +2728,9 @@ Index Based on Query Patterns: Focus on indexing fields frequently used in find(
 - Denial of Service (DoS): Unoptimized queries or lack of rate limiting can allow attackers to overwhelm your database.
 - Information Disclosure: Preventing errors from leaking sensitive database or server information.
 
-### 🎈 9. Ref,Populate, Query Operators
+---
+
+## 🎈 9. Ref,Populate, Query Operators
 
 `Building relation between 2 collections : `
 
@@ -2801,3 +2805,114 @@ db.orders.aggregate( [
 
 Mongo DB practical Example ref :
 https://www.practical-mongodb-aggregations.com/intro/introducing-aggregations.html
+
+---
+
+## 🚀 1. Deploy on AWS
+
+### Deploy on AWS
+
+- Sign up
+- Create a new instance EC2 instance (elastic compute)
+  - instance type : t2.micro
+  - create key pair [auto download a .pem file]
+  - After instance creation:
+    - connect with 'SSH client' :
+      - 1.  on download folder, open powershell, run 'icacls devTinder-secret.pem' - [This will change the permission, to allow to use cloud machine.]
+      - 2.  ssh -i "devTinder-secret.pem" ubuntu@ec2-13-236-52-129.ap-southeast-2.compute.amazonaws.com -[ connect to that mechine,next time onwars will use this ssh link to connect to cloud ]
+  - exit - to logout from machine
+
+### Frontend :
+
+- install nvm & node (same version on local) - https://nodejs.org/en/download
+- clone git repo
+- npm i
+- npm run build
+- sudo app update - for update all ubontu app
+- install nginx - sudo apt install nginx
+- start nginx - sudo systemctl start nginx
+- enable nginx - sudo systemctl enable nginx
+- copy dist folder - sudo scp -r dist/\* /var/www/html/
+- to confirm - go to - cd /var/www/html/ -> ls
+
+- we have to enable nginx port for instance: 80
+
+  - security -> click on sequrity group -> edit inbound rules -> add rule -> pass port no 80 -> save -> hit machine ip
+
+- next time onwards any new changes :
+  - git pull => npm run build => sudo scp -r dist/\* /var/www/html/
+
+### Backend :
+
+- Give cloud ip access to mongo db
+- npm start
+- allow port(3000) to AWS instance
+
+- pm2 - process manager - run 24\*7 => npm install pm2 -g
+
+  - pm2 start npm -- start - [with default name - npm]
+  - pm2 start npm --name devtinder-backend -- start - [with your custom name]
+  - pm2 logs -[ to debug, if any failure happen ]
+  - pm2 flush <name>
+  - pm2 list -[ to check all status ]
+  - pm2 stop <name> -[ to stop server]
+  - pm2 delete <name>-[ to delete server ]
+
+- DNS mapping
+
+  - nginx act as a server and also act as a load balancer. each url will pass through nginx config.
+    - sudo nano /etc/nginx/sites-available/default nano -> edit
+
+- config ngnix:
+
+```javascript
+
+    server_name 13.236.52.129;
+
+    location /api/ {
+        	proxy_pass http://localhost:3000/;
+        	proxy_http_version 1.1;
+        	proxy_set_header Upgrade $http_upgrade;
+        	proxy_set_header Connection 'upgrade';
+        	proxy_set_header Host $host;
+        	proxy_cache_bypass $http_upgrade;
+    	}
+```
+
+- now all 13.236.52.12:3000 will redirect to 13.236.52.12/api ex. http://13.236.52.129/api/user/feed
+- after edit config again restart nginx => sudo systemctl restart nginx
+
+- on local change base url -> http://localhost:3000/ => /api/
+
+## 🚀 2. To set secret things
+
+npm i dotenv
+
+```javascript
+
+// .env
+
+#secrect key
+PORT=3000
+```
+
+- To access :
+
+  ```javascript
+  require("dotenv").config(); // add to app.js
+  console.log(process.env.PORT);
+  ```
+
+dotenv will take all defined thing from .env file and attached to a big global object.
+
+- We can't add .env on frontend repo, because code will run on browser, but browser does not know what is process.env.
+
+  To make there dynamic :
+
+  - export const BASE_URL = location.hostname === "localhost" ? "http://localhost:3000/" : "/api/";
+
+- On backend GitHub also, we can't push .env file, we have to manually add .env on cloud
+  - sudo nano .env
+  - pm2 restart 0
+
+How to use multiple .env file?
