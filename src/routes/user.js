@@ -11,7 +11,7 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
       toUserId: loggedInUser._id,
       status: "interested",
       // }).populate("fromUserId", ["firstName", "lastName"]);
-    }).populate("fromUserId", "firstName lastName gender skill");
+    }).populate("fromUserId", "firstName lastName age gender skill about");
 
     res.json({
       message: "Data fetched successfully",
@@ -31,8 +31,8 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         { fromUserId: loggedInUser._id, status: "accepted" },
       ],
     })
-      .populate("fromUserId", "firstName lastName gender skill")
-      .populate("toUserId", "firstName lastName gender skill");
+      .populate("fromUserId", "firstName lastName age gender skill about")
+      .populate("toUserId", "firstName lastName age gender skill about");
 
     const onlySenderdetails = data.map((row) => {
       if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
@@ -54,7 +54,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
 // Read all users
 userRouter.get("/user/feed", userAuth, async (req, res) => {
   const pageNo = parseInt(req.query.page) || 1;
-  let limit = parseInt(req.query.limit) || 10;
+  let limit = parseInt(req.query.limit) || 3;
   limit = limit > 50 ? 50 : limit;
 
   const skip = (pageNo - 1) * limit;
@@ -82,7 +82,7 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
         { _id: { $ne: loggedInUser._id } }, // not equal to user
       ],
     })
-      .select("firstName lastName age gender skill")
+      .select("firstName lastName age gender skill about")
       .skip(skip)
       .limit(limit);
 

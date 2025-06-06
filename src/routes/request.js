@@ -8,7 +8,7 @@ const {
   validateReceiveRequest,
 } = require("../utils/validate");
 
-requestRouter.patch(
+requestRouter.get(
   "/request/send/:status/:userId",
   userAuth,
   async (req, res) => {
@@ -35,7 +35,7 @@ requestRouter.patch(
   }
 );
 
-requestRouter.patch(
+requestRouter.get(
   "/request/receive/:status/:requestId",
   userAuth,
   async (req, res) => {

@@ -61,7 +61,7 @@ profileRouter.patch("/profile/edit/:userId", async (req, res) => {
 
 // alternative profile update with cookie
 
-profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
+profileRouter.post("/profile/edit", userAuth, async (req, res) => {
   const loggedInUser = req.user;
   try {
     validateEditProfileData(req);

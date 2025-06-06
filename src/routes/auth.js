@@ -9,7 +9,7 @@ const bcrypt = require("bcrypt");
 const { userAuth } = require("../middlewares/auth");
 
 // Login
-authRouter.get("/user/login", async (req, res) => {
+authRouter.post("/user/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -26,7 +26,11 @@ authRouter.get("/user/login", async (req, res) => {
         httpOnly: true,
         expires: new Date(Date.now() + 8 * 3600000),
       });
-      res.json({ message: "Login Successfully !!" });
+
+      res.json({
+        message: "Login Successfully !!",
+        data: user,
+      });
     } else {
       throw new Error("Invalid Credential!!");
     }
@@ -39,17 +43,35 @@ authRouter.get("/user/login", async (req, res) => {
 authRouter.post("/user/signup", async (req, res) => {
   try {
     validateSignUpData(req);
-    const { firstName, lastName, emailId, password, age, gender } = req.body;
+    const {
+      firstName,
+      lastName,
+      emailId,
+      password,
+      age,
+      gender,
+      skill,
+      about,
+    } = req.body;
     const user = new User({
-      firstName: firstName,
-      lastName: lastName,
-      emailId: emailId,
-      password: password,
-      age: age,
-      gender: gender,
+      firstName,
+      lastName,
+      emailId,
+      password,
+      age,
+      gender,
+      skill,
+      about,
     });
-    await user.save();
-    res.json({ message: "User created successfully." });
+    const data = await user.save();
+
+    var token = await user.getJWT(); // schema helper method
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      expires: new Date(Date.now() + 8 * 3600000),
+    });
+    res.json({ message: "User created successfully.", data });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
